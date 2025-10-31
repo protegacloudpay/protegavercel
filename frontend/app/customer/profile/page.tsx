@@ -30,7 +30,7 @@ export default function CustomerProfilePage() {
           router.push('/customer/login');
           return;
         }
-        const data = await api.getCustomerProfile();
+        const data = await api.getCustomerProfile() as any;
         setProfile({
           name: data.name || '',
           email: data.email || '',
