@@ -216,7 +216,7 @@ export default function TransactionsPage() {
           <div className="text-right">
             <p className="text-sm opacity-90">Total Amount</p>
             <p className="text-3xl font-bold">
-              {formatCurrency(sortedTransactions.reduce((sum, txn) => sum + txn.amount, 0))}
+              {formatCurrency(sortedTransactions.reduce((sum, txn) => sum + txn.total, 0))}
             </p>
           </div>
         </div>
