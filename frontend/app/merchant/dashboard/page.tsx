@@ -46,8 +46,9 @@ export default function DashboardOverview() {
           approval_rate: statsResponse.approval_rate,
         });
 
+        const txns = Array.isArray(transactionsResponse) ? transactionsResponse : [];
         setRecentTransactions(
-          (transactionsResponse || []).map((txn: any) => ({
+          txns.map((txn: any) => ({
             transaction_id: txn.transaction_id,
             customer_id: txn.customer_id,
             total: txn.total,

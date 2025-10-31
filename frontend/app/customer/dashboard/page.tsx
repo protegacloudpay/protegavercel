@@ -36,8 +36,9 @@ export default function CustomerDashboardPage() {
           api.getPaymentMethods(),
         ]);
 
+        const txns = Array.isArray(txnResponse) ? txnResponse : [];
         setTransactions(
-          (txnResponse || []).map((txn: any) => ({
+          txns.map((txn: any) => ({
             transaction_id: txn.transaction_id,
             merchant_id: txn.payment_provider || txn.customer_id,
             total: txn.total,

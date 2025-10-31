@@ -22,8 +22,9 @@ export default function TransactionsPage() {
     const fetchTransactions = async () => {
       try {
         const data = await api.getTransactions(0, 200);
+        const txns = Array.isArray(data) ? data : [];
         setTransactions(
-          (data || []).map((txn: any) => ({
+          txns.map((txn: any) => ({
             transaction_id: txn.transaction_id,
             customer_id: txn.customer_id,
             total: txn.total,
