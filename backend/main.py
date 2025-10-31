@@ -72,8 +72,6 @@ else:
 origins = list(set([o.strip() for o in origins if o.strip()]))
 
 # Custom CORS middleware to handle Vercel preview deployments
-from fastapi.middleware.cors import CORSMiddleware as BaseCORSMiddleware
-
 @app.middleware("http")
 async def custom_cors_middleware(request: Request, call_next):
     origin = request.headers.get("origin")
@@ -87,6 +85,20 @@ async def custom_cors_middleware(request: Request, call_next):
         # Allow all Vercel deployments for protegos-projects
         elif origin.endswith("-protegos-projects.vercel.app") or origin.endswith(".vercel.app"):
             allowed = True
+    
+    # Handle preflight OPTIONS requests
+    if request.method == "OPTIONS" and allowed:
+        from fastapi.responses import Response
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Max-Age": "600",
+            }
+        )
     
     response = await call_next(request)
     
