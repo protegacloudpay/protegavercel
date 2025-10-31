@@ -1,0 +1,24 @@
+# Docker ignore file
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+backend/.pytest_cache/
+frontend/
+*.md
+.git/
+.gitignore
+.env
+.env.local
+node_modules/
+.next/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/

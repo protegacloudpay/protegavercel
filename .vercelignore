@@ -1,0 +1,11 @@
+# Ignore files for Vercel deployment
+backend/
+*.md
+docker-compose.yml
+.git/
+.env.local
+.env*.local
+node_modules/
+.next/
+
+
