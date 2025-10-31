@@ -140,70 +140,90 @@ export default function TransactionsPage() {
 
       {/* Transactions Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th 
-                  onClick={() => handleSort('id')}
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                >
-                  Transaction ID
-                  {sortBy === 'id' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                </th>
-                <th 
-                  onClick={() => handleSort('customer')}
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                >
-                  Customer ID
-                  {sortBy === 'customer' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                </th>
-                <th 
-                  onClick={() => handleSort('amount')}
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                >
-                  Amount
-                  {sortBy === 'amount' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                </th>
-                <th 
-                  onClick={() => handleSort('status')}
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                >
-                  Status
-                  {sortBy === 'status' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                </th>
-                <th 
-                  onClick={() => handleSort('timestamp')}
-                  className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                >
-                  Timestamp
-                  {sortBy === 'timestamp' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {sortedTransactions.map((txn) => (
-                <tr key={txn.transaction_id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{txn.transaction_id}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700">{txn.customer_id}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.total)}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(txn.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{formatDate(txn.timestamp)}</span>
-                  </td>
+        {sortedTransactions.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <span className="text-3xl">💳</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Transactions Found</h3>
+            <p className="text-gray-600 mb-6">
+              {filter !== 'all' 
+                ? `No ${filter} transactions to display. Try changing the filter.`
+                : 'Start processing payments through your POS terminal to see transactions here.'}
+            </p>
+            <a
+              href="/merchant/pos"
+              className="inline-block px-6 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-semibold"
+            >
+              Open POS Terminal
+            </a>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th 
+                    onClick={() => handleSort('id')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    Transaction ID
+                    {sortBy === 'id' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </th>
+                  <th 
+                    onClick={() => handleSort('customer')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    Customer ID
+                    {sortBy === 'customer' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </th>
+                  <th 
+                    onClick={() => handleSort('amount')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    Amount
+                    {sortBy === 'amount' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </th>
+                  <th 
+                    onClick={() => handleSort('status')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    Status
+                    {sortBy === 'status' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </th>
+                  <th 
+                    onClick={() => handleSort('timestamp')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    Timestamp
+                    {sortBy === 'timestamp' && <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sortedTransactions.map((txn) => (
+                  <tr key={txn.transaction_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">{txn.transaction_id}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-700">{txn.customer_id}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.total)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(txn.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-600">{formatDate(txn.timestamp)}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Summary */}

@@ -77,45 +77,65 @@ export default function CustomersPage() {
 
       {/* Customers Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date Added</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Transactions</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Spent</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredCustomers.map((customer) => (
-                <tr key={customer.customer_id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{customer.name}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{formatDate(customer.date_added)}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{customer.transaction_count}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(customer.total_spent)}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => setSelectedCustomer(customer)}
-                      className="text-[#3cb6ad] hover:underline text-sm font-medium"
-                    >
-                      View Stats
-                    </button>
-                  </td>
+        {filteredCustomers.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <span className="text-3xl">👥</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Customers Yet</h3>
+            <p className="text-gray-600 mb-6">
+              {searchTerm 
+                ? `No customers found matching "${searchTerm}". Try a different search term.`
+                : 'Customers will appear here after they register and complete their first transaction.'}
+            </p>
+            <a
+              href="/merchant/pos"
+              className="inline-block px-6 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-semibold"
+            >
+              Open POS Terminal
+            </a>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date Added</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Transactions</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Spent</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredCustomers.map((customer) => (
+                  <tr key={customer.customer_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">{customer.name}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-600">{formatDate(customer.date_added)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-semibold text-gray-900">{customer.transaction_count}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-semibold text-gray-900">{formatCurrency(customer.total_spent)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => setSelectedCustomer(customer)}
+                        className="text-[#3cb6ad] hover:underline text-sm font-medium"
+                      >
+                        View Stats
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Customer Modal */}

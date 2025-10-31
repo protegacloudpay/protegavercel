@@ -317,40 +317,66 @@ export default function DashboardOverview() {
           </div>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer ID</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {recentTransactions.map((txn) => (
-                <tr key={txn.transaction_id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{txn.transaction_id}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700">{txn.customer_id}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.total)}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(txn.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{formatDate(txn.timestamp)}</span>
-                  </td>
+        {recentTransactions.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <span className="text-3xl">📊</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Transactions Yet</h3>
+            <p className="text-gray-600 mb-6">
+              Start processing payments through your POS terminal to see transaction history here.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <a
+                href="/merchant/pos"
+                className="px-6 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-semibold"
+              >
+                Open POS Terminal
+              </a>
+              <a
+                href="/merchant/inventory"
+                className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+              >
+                Add Products
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Timestamp</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recentTransactions.map((txn) => (
+                  <tr key={txn.transaction_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">{txn.transaction_id}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-700">{txn.customer_id}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.total)}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(txn.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-gray-600">{formatDate(txn.timestamp)}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
