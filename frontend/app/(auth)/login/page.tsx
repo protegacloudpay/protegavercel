@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       await api.login(email, password);
-      const user = await api.getCurrentUser();
+      const user = await api.getCurrentUser() as { role: string };
       if (user.role === 'customer') {
         router.push('/customer/dashboard');
       } else {

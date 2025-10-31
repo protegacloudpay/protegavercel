@@ -21,7 +21,7 @@ export default function MerchantLoginPage() {
 
     try {
       await api.login(email, password);
-      const user = await api.getCurrentUser();
+      const user = await api.getCurrentUser() as { role: string };
       if (user.role !== 'merchant') {
         throw new Error('Account is not registered as a merchant');
       }

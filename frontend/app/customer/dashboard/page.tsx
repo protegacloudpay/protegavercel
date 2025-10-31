@@ -25,7 +25,7 @@ export default function CustomerDashboardPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const user = await api.getCurrentUser();
+        const user = await api.getCurrentUser() as { role: string };
         if (user?.role !== 'customer') {
           router.push('/customer/login');
           return;

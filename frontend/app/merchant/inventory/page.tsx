@@ -33,7 +33,7 @@ export default function InventoryPage() {
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        const currentUser = await api.getCurrentUser();
+        const currentUser = await api.getCurrentUser() as { role: string };
         if (currentUser?.role !== 'merchant') {
           router.push('/merchant/login');
           return;

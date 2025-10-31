@@ -17,7 +17,7 @@ export default function DashboardLayout({
   useEffect(() => {
     const verify = async () => {
       try {
-        const user = await api.getCurrentUser();
+        const user = await api.getCurrentUser() as { role: string };
         if (user?.role !== 'merchant') {
           router.push('/merchant/login');
           return;
