@@ -26,25 +26,31 @@ export default function DashboardOverview() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [inventoryCount, setInventoryCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [merchantName, setMerchantName] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsResponse, transactionsResponse, inventoryResponse] = await Promise.all([
+        const [statsResponse, transactionsResponse, inventoryResponse, userResponse] = await Promise.all([
           api.getMerchantStats(),
           api.getTransactions(0, 5),
           api.getInventory(),
+          api.getCurrentUser(),
         ]);
+
+        // Set merchant name
+        const user = userResponse as any;
+        setMerchantName(user?.name || user?.email || 'Merchant');
 
         const stats = statsResponse as any;
         setStats({
-          total_transactions: stats.total_transactions,
-          revenue: stats.revenue,
-          protega_fees: stats.protega_fees,
-          customers: stats.customers,
-          avg_transaction: stats.avg_transaction,
-          fraud_attempts: stats.fraud_attempts,
-          approval_rate: stats.approval_rate,
+          total_transactions: stats.total_transactions || 0,
+          revenue: stats.revenue || 0,
+          protega_fees: stats.protega_fees || 0,
+          customers: stats.customers || 0,
+          avg_transaction: stats.avg_transaction || 0,
+          fraud_attempts: stats.fraud_attempts || 0,
+          approval_rate: stats.approval_rate || 0,
         });
 
         const txns = Array.isArray(transactionsResponse) ? transactionsResponse : [];
@@ -106,7 +112,7 @@ export default function DashboardOverview() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening with your account.</p>
+        <p className="text-gray-600">Welcome back, {merchantName}! Here's what's happening with your account.</p>
       </div>
 
       {/* Stats Grid */}
