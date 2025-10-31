@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 interface Transaction {
-  id: string;
-  customer: string;
-  amount: number;
-  status: 'completed' | 'pending' | 'failed';
+  transaction_id: string;
+  customer_id: string;
+  total: number;
+  status: string;
   timestamp: string;
-  merchant: string;
 }
 
 export default function TransactionsPage() {
@@ -20,77 +20,22 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockTransactions: Transaction[] = [
-        {
-          id: 'TXN-001',
-          customer: 'Customer #001',
-          amount: 45.99,
-          status: 'completed',
-          timestamp: new Date().toISOString(),
-          merchant: 'Coffee Shop'
-        },
-        {
-          id: 'TXN-002',
-          customer: 'Customer #002',
-          amount: 128.50,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          merchant: 'Restaurant'
-        },
-        {
-          id: 'TXN-003',
-          customer: 'Customer #003',
-          amount: 23.00,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          merchant: 'Retail Store'
-        },
-        {
-          id: 'TXN-004',
-          customer: 'Customer #004',
-          amount: 67.25,
-          status: 'pending',
-          timestamp: new Date(Date.now() - 10800000).toISOString(),
-          merchant: 'Gas Station'
-        },
-        {
-          id: 'TXN-005',
-          customer: 'Customer #005',
-          amount: 34.99,
-          status: 'failed',
-          timestamp: new Date(Date.now() - 14400000).toISOString(),
-          merchant: 'Grocery Store'
-        },
-        {
-          id: 'TXN-006',
-          customer: 'Customer #006',
-          amount: 156.75,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 18000000).toISOString(),
-          merchant: 'Clothing Store'
-        },
-        {
-          id: 'TXN-007',
-          customer: 'Customer #007',
-          amount: 89.50,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 21600000).toISOString(),
-          merchant: 'Electronics Store'
-        },
-        {
-          id: 'TXN-008',
-          customer: 'Customer #008',
-          amount: 12.99,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 25200000).toISOString(),
-          merchant: 'Bookstore'
-        }
-      ];
-      
-      setTransactions(mockTransactions);
-      setLoading(false);
+      try {
+        const data = await api.getTransactions(0, 200);
+        setTransactions(
+          (data || []).map((txn: any) => ({
+            transaction_id: txn.transaction_id,
+            customer_id: txn.customer_id,
+            total: txn.total,
+            status: txn.status,
+            timestamp: txn.timestamp,
+          }))
+        );
+      } catch (error) {
+        console.error('Unable to load transactions', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchTransactions();
@@ -237,15 +182,15 @@ export default function TransactionsPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {sortedTransactions.map((txn) => (
-                <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={txn.transaction_id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{txn.id}</span>
+                    <span className="text-sm font-medium text-gray-900">{txn.transaction_id}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700">{txn.customer}</span>
+                    <span className="text-sm text-gray-700">{txn.customer_id}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.amount)}</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.total)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(txn.status)}

@@ -77,3 +77,5 @@ Your app now processes real payments through Stripe!
 
 See `STRIPE_SETUP.md` for detailed documentation.
 
+
+

@@ -1,60 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 interface Customer {
-  id: string;
+  customer_id: string;
   name: string;
-  dateAdded: string;
-  transactionCount: number;
-  totalSpent: number;
+  date_added: string;
+  transaction_count: number;
+  total_spent: number;
 }
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>([
-    {
-      id: 'CUST-001',
-      name: 'Customer #001',
-      dateAdded: '2025-01-15',
-      transactionCount: 12,
-      totalSpent: 456.78
-    },
-    {
-      id: 'CUST-002',
-      name: 'Customer #002',
-      dateAdded: '2025-01-14',
-      transactionCount: 8,
-      totalSpent: 342.50
-    },
-    {
-      id: 'CUST-003',
-      name: 'Customer #003',
-      dateAdded: '2025-01-13',
-      transactionCount: 15,
-      totalSpent: 567.23
-    },
-    {
-      id: 'CUST-004',
-      name: 'Customer #004',
-      dateAdded: '2025-01-12',
-      transactionCount: 20,
-      totalSpent: 823.99
-    },
-    {
-      id: 'CUST-005',
-      name: 'Customer #005',
-      dateAdded: '2025-01-11',
-      transactionCount: 6,
-      totalSpent: 189.34
-    }
-  ]);
-
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
+  useEffect(() => {
+    const loadCustomers = async () => {
+      try {
+        const response = await api.getMerchantCustomers();
+        setCustomers(response?.customers || []);
+      } catch (error) {
+        console.error('Failed to load customers', error);
+      }
+    };
+
+    loadCustomers();
+  }, []);
+
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.id.toLowerCase().includes(searchTerm.toLowerCase())
+    customer.customer_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const formatCurrency = (amount: number) => {
@@ -118,13 +95,13 @@ export default function CustomersPage() {
                     <span className="text-sm font-medium text-gray-900">{customer.name}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{formatDate(customer.dateAdded)}</span>
+                    <span className="text-sm text-gray-600">{formatDate(customer.date_added)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{customer.transactionCount}</span>
+                    <span className="text-sm font-semibold text-gray-900">{customer.transaction_count}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(customer.totalSpent)}</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(customer.total_spent)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
@@ -168,11 +145,11 @@ export default function CustomersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Customer ID</p>
-                    <p className="font-medium text-gray-900">{selectedCustomer.id}</p>
+                    <p className="font-medium text-gray-900">{selectedCustomer.customer_id}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Enrollment Date</p>
-                    <p className="font-medium text-gray-900">{formatDate(selectedCustomer.dateAdded)}</p>
+                    <p className="font-medium text-gray-900">{formatDate(selectedCustomer.date_added)}</p>
                   </div>
                 </div>
               </div>
@@ -182,11 +159,11 @@ export default function CustomersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4">
                     <p className="text-sm text-gray-600">Total Transactions</p>
-                    <p className="text-2xl font-bold text-[#3cb6ad]">{selectedCustomer.transactionCount}</p>
+                    <p className="text-2xl font-bold text-[#3cb6ad]">{selectedCustomer.transaction_count}</p>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4">
                     <p className="text-sm text-gray-600">Total Spent</p>
-                    <p className="text-2xl font-bold text-[#3cb6ad]">{formatCurrency(selectedCustomer.totalSpent)}</p>
+                    <p className="text-2xl font-bold text-[#3cb6ad]">{formatCurrency(selectedCustomer.total_spent)}</p>
                   </div>
                 </div>
               </div>

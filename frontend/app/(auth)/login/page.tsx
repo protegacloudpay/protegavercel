@@ -5,26 +5,32 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { api } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Store mock token and redirect
-    localStorage.setItem('auth_token', 'mock_jwt_token_' + Date.now());
-    localStorage.setItem('user_email', email);
-    localStorage.setItem('user_role', email === 'admin@protega.com' ? 'admin' : 'merchant');
-    
-    router.push('/dashboard');
+    setError(null);
+
+    try {
+      await api.login(email, password);
+      const user = await api.getCurrentUser();
+      if (user.role === 'customer') {
+        router.push('/customer/dashboard');
+      } else {
+        router.push('/merchant/dashboard');
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Unable to sign in');
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,6 +75,12 @@ export default function LoginPage() {
                 />
               </div>
               
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -84,12 +96,6 @@ export default function LoginPage() {
                 Sign up
               </Link>
             </p>
-            
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg text-sm text-blue-800">
-              <p className="font-semibold mb-2">Demo Credentials:</p>
-              <p>Merchant: any@email.com / any password</p>
-              <p>Admin: admin@protega.com / any password</p>
-            </div>
           </div>
         </div>
       </div>
@@ -97,5 +103,7 @@ export default function LoginPage() {
     </>
   );
 }
+
+
 
 

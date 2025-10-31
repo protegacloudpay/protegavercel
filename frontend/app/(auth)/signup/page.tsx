@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { api } from '@/lib/api';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,20 +16,26 @@ export default function SignupPage() {
     company: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Store mock token and redirect
-    localStorage.setItem('auth_token', 'mock_jwt_token_' + Date.now());
-    localStorage.setItem('user_email', formData.email);
-    localStorage.setItem('user_role', 'merchant');
-    
-    router.push('/dashboard');
+    setError(null);
+
+    try {
+      await api.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        company_name: formData.company,
+        role: 'merchant',
+      });
+      router.push('/merchant/dashboard');
+    } catch (err: any) {
+      setError(err?.message || 'Unable to create account');
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +121,12 @@ export default function SignupPage() {
                 <p className="text-xs text-gray-500 mt-1">At least 8 characters</p>
               </div>
               
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
@@ -136,5 +149,7 @@ export default function SignupPage() {
     </>
   );
 }
+
+
 
 

@@ -102,3 +102,5 @@ The POS system now syncs perfectly across tabs and windows using localStorage ev
 - Start a transaction and watch them sync! ✨
 
 
+
+

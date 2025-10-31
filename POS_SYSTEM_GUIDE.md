@@ -182,3 +182,5 @@ Your POS system now has:
 **Protega CloudPay™** - In-store biometric payments! 🏪👆
 
 
+
+

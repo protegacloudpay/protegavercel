@@ -316,12 +316,30 @@ export default function MerchantPOSPage() {
             <h1 className="text-4xl font-bold text-white mb-2">Merchant POS Terminal</h1>
             <p className="text-gray-300">Protega CloudPay™ Point of Sale</p>
           </div>
-          <Link
-            href="/merchant/dashboard"
-            className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-colors"
-          >
-            ← Back to Dashboard
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const url = typeof window !== 'undefined' ? `${window.location.origin}/customer/terminal` : '/customer/terminal';
+                navigator.clipboard?.writeText(url);
+              }}
+              className="px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-colors text-sm"
+            >
+              Copy Customer URL
+            </button>
+            <a
+              href="/customer/terminal"
+              target="_blank"
+              className="px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-colors text-sm"
+            >
+              Open Customer Screen →
+            </a>
+            <Link
+              href="/merchant/dashboard"
+              className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-colors"
+            >
+              ← Back to Dashboard
+            </Link>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">

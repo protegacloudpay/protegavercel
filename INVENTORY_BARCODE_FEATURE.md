@@ -170,3 +170,5 @@
 **Your POS now has full inventory management with barcode scanning!** 🏪📦
 
 
+
+

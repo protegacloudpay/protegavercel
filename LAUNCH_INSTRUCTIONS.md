@@ -214,3 +214,5 @@ The code is clean, secure, and fully functional. Just choose your deployment pla
 *Protega CloudPay™ - Pay with nothing but your fingerprint.*
 
 
+
+

@@ -392,7 +392,16 @@ export default function CustomerTerminalPage() {
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Choose Payment Method</h2>
                 {paymentMethods.length === 0 ? (
-                  <p className="text-gray-600 mb-4">No payment methods available. Please add one first.</p>
+                  <div className="text-center">
+                    <p className="text-gray-600 mb-4">No payment methods available. Please add one first.</p>
+                    <a
+                      href="/customer/payment-methods"
+                      target="_blank"
+                      className="inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                    >
+                      Open Payment Methods
+                    </a>
+                  </div>
                 ) : (
                   <div className="space-y-4 mb-6">
                     {paymentMethods.map((method) => (
@@ -425,7 +434,7 @@ export default function CustomerTerminalPage() {
                 )}
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-4 flex-wrap">
                 <button
                   onClick={handleCancel}
                   className="flex-1 px-6 py-4 bg-gray-200 text-gray-900 rounded-xl hover:bg-gray-300 transition-colors font-semibold text-lg"
@@ -439,6 +448,13 @@ export default function CustomerTerminalPage() {
                 >
                   Complete Payment
                 </button>
+                <a
+                  href="/customer/payment-methods"
+                  target="_blank"
+                  className="px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-semibold text-lg"
+                >
+                  Add Payment Method
+                </a>
               </div>
             </div>
           )}

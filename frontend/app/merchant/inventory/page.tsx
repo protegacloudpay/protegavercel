@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 interface Product {
-  id: string;
+  id: number;
   name: string;
   barcode: string;
   price: number;
@@ -26,24 +27,28 @@ export default function InventoryPage() {
     stock: ''
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      router.push('/merchant/login');
-    }
+    const loadInventory = async () => {
+      try {
+        const currentUser = await api.getCurrentUser();
+        if (currentUser?.role !== 'merchant') {
+          router.push('/merchant/login');
+          return;
+        }
 
-    // Load products from localStorage
-    const savedProducts = localStorage.getItem('merchant_inventory');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
+        const inventory = await api.getInventory();
+        setProducts(Array.isArray(inventory) ? inventory : []);
+      } catch (err) {
+        console.error('Failed to load inventory', err);
+        router.push('/merchant/login');
+      }
+    };
+
+    loadInventory();
   }, [router]);
-
-  useEffect(() => {
-    // Save to localStorage whenever products change
-    localStorage.setItem('merchant_inventory', JSON.stringify(products));
-  }, [products]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -53,53 +58,47 @@ export default function InventoryPage() {
   };
 
   const handleBarcodeScan = () => {
-    // Simulate barcode scanner - generates a random barcode
     const randomBarcode = Math.floor(1000000000000 + Math.random() * 9000000000000).toString();
     setFormData({
       ...formData,
       barcode: randomBarcode
     });
-    alert(`Barcode scanned: ${randomBarcode}\n\nIn production, this would come from your physical barcode scanner.`);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setError(null);
+
     if (!formData.name || !formData.barcode || !formData.price) {
       alert('Please fill in all required fields');
       return;
     }
+    setSaving(true);
 
-    const product: Product = {
-      id: editingProduct ? editingProduct.id : Date.now().toString(),
+    const payload = {
       name: formData.name,
       barcode: formData.barcode,
       price: parseFloat(formData.price),
       category: formData.category || undefined,
-      stock: formData.stock ? parseInt(formData.stock) : undefined
+      stock: formData.stock ? parseInt(formData.stock, 10) : undefined,
     };
 
-    if (editingProduct) {
-      setProducts(products.map(p => p.id === editingProduct.id ? product : p));
-      setEditingProduct(null);
-    } else {
-      // Check if barcode already exists
-      if (products.some(p => p.barcode === product.barcode)) {
-        alert('A product with this barcode already exists!');
-        return;
+    try {
+      if (editingProduct) {
+        await api.updateInventoryItem(editingProduct.id, payload);
+      } else {
+        await api.createInventoryItem(payload);
       }
-      setProducts([...products, product]);
+      const inventory = await api.getInventory();
+      setProducts(Array.isArray(inventory) ? inventory : []);
+      setEditingProduct(null);
+      setShowAddForm(false);
+      setFormData({ name: '', barcode: '', price: '', category: '', stock: '' });
+    } catch (err: any) {
+      setError(err?.message || 'Unable to save product');
+    } finally {
+      setSaving(false);
     }
-
-    // Reset form
-    setFormData({
-      name: '',
-      barcode: '',
-      price: '',
-      category: '',
-      stock: ''
-    });
-    setShowAddForm(false);
   };
 
   const handleEdit = (product: Product) => {
@@ -114,9 +113,16 @@ export default function InventoryPage() {
     setShowAddForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this product?')) {
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+
+    try {
+      await api.deleteInventoryItem(id);
       setProducts(products.filter(p => p.id !== id));
+    } catch (err: any) {
+      alert(err?.message || 'Unable to delete product');
     }
   };
 
@@ -177,6 +183,11 @@ export default function InventoryPage() {
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -274,9 +285,10 @@ export default function InventoryPage() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="px-8 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-semibold"
+                  disabled={saving}
+                  className="px-8 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-semibold disabled:opacity-60"
                 >
-                  {editingProduct ? 'Update Product' : 'Add Product'}
+                  {saving ? 'Saving...' : editingProduct ? 'Update Product' : 'Add Product'}
                 </button>
                 <button
                   type="button"
@@ -397,5 +409,7 @@ export default function InventoryPage() {
     </div>
   );
 }
+
+
 
 

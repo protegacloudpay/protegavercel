@@ -1,84 +1,67 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 interface DashboardStats {
-  totalTransactions: number;
+  total_transactions: number;
   revenue: number;
-  protegaFees: number;
+  protega_fees: number;
   customers: number;
-  avgTransaction: number;
-  fraudAttempts: number;
-  approvalRate: number;
+  avg_transaction: number;
+  fraud_attempts: number;
+  approval_rate: number;
 }
 
 interface Transaction {
-  id: string;
-  customer: string;
-  amount: number;
-  status: 'completed' | 'pending' | 'failed';
+  transaction_id: string;
+  customer_id: string;
+  total: number;
+  status: string;
   timestamp: string;
 }
 
 export default function DashboardOverview() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+  const [inventoryCount, setInventoryCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch mock data
     const fetchData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setStats({
-        totalTransactions: 1234,
-        revenue: 45678.90,
-        protegaFees: 456.79,
-        customers: 89,
-        avgTransaction: 37.02,
-        fraudAttempts: 3,
-        approvalRate: 99.76
-      });
-      
-      setRecentTransactions([
-        {
-          id: 'TXN-001',
-          customer: 'Customer #001',
-          amount: 45.99,
-          status: 'completed',
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: 'TXN-002',
-          customer: 'Customer #002',
-          amount: 128.50,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 3600000).toISOString()
-        },
-        {
-          id: 'TXN-003',
-          customer: 'Customer #003',
-          amount: 23.00,
-          status: 'completed',
-          timestamp: new Date(Date.now() - 7200000).toISOString()
-        },
-        {
-          id: 'TXN-004',
-          customer: 'Customer #004',
-          amount: 67.25,
-          status: 'pending',
-          timestamp: new Date(Date.now() - 10800000).toISOString()
-        },
-        {
-          id: 'TXN-005',
-          customer: 'Customer #005',
-          amount: 34.99,
-          status: 'failed',
-          timestamp: new Date(Date.now() - 14400000).toISOString()
-        }
-      ]);
-      
-      setLoading(false);
+      try {
+        const [statsResponse, transactionsResponse, inventoryResponse] = await Promise.all([
+          api.getMerchantStats(),
+          api.getTransactions(0, 5),
+          api.getInventory(),
+        ]);
+
+        setStats({
+          total_transactions: statsResponse.total_transactions,
+          revenue: statsResponse.revenue,
+          protega_fees: statsResponse.protega_fees,
+          customers: statsResponse.customers,
+          avg_transaction: statsResponse.avg_transaction,
+          fraud_attempts: statsResponse.fraud_attempts,
+          approval_rate: statsResponse.approval_rate,
+        });
+
+        setRecentTransactions(
+          (transactionsResponse || []).map((txn: any) => ({
+            transaction_id: txn.transaction_id,
+            customer_id: txn.customer_id,
+            total: txn.total,
+            status: txn.status,
+            timestamp: txn.timestamp,
+          }))
+        );
+
+        setInventoryCount(Array.isArray(inventoryResponse) ? inventoryResponse.length : 0);
+      } catch (error) {
+        console.error('Failed to load dashboard data', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -133,7 +116,7 @@ export default function DashboardOverview() {
             </div>
             <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">Total</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">{stats?.totalTransactions.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{stats?.total_transactions ?? 0}</p>
           <p className="text-sm text-gray-600">Transactions</p>
         </div>
 
@@ -155,7 +138,7 @@ export default function DashboardOverview() {
             </div>
             <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-1 rounded">Fees</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">{formatCurrency(stats?.protegaFees || 0)}</p>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{formatCurrency(stats?.protega_fees || 0)}</p>
           <p className="text-sm text-gray-600">Protega Fees</p>
         </div>
 
@@ -166,7 +149,7 @@ export default function DashboardOverview() {
             </div>
             <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">Active</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900 mb-1">{stats?.customers}</p>
+          <p className="text-3xl font-bold text-gray-900 mb-1">{stats?.customers ?? 0}</p>
           <p className="text-sm text-gray-600">Customers</p>
         </div>
       </div>
@@ -178,7 +161,7 @@ export default function DashboardOverview() {
             <span className="text-gray-600 font-medium">Avg. Transaction</span>
             <span className="text-2xl">📊</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats?.avgTransaction || 0)}</p>
+          <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats?.avg_transaction || 0)}</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -186,7 +169,7 @@ export default function DashboardOverview() {
             <span className="text-gray-600 font-medium">Fraud Attempts</span>
             <span className="text-2xl">🛡️</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats?.fraudAttempts}</p>
+          <p className="text-2xl font-bold text-gray-900">{stats?.fraud_attempts ?? 0}</p>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -194,12 +177,12 @@ export default function DashboardOverview() {
             <span className="text-gray-600 font-medium">Approval Rate</span>
             <span className="text-2xl">✅</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats?.approvalRate}%</p>
+          <p className="text-2xl font-bold text-gray-900">{stats?.approval_rate ?? 0}%</p>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
         {/* POS Terminal */}
         <div className="bg-gradient-to-br from-[#3cb6ad] to-[#2ea99f] rounded-xl shadow-lg p-8 text-white">
           <div className="flex items-center justify-between mb-6">
@@ -250,16 +233,61 @@ export default function DashboardOverview() {
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Total Products</span>
               <span className="text-2xl font-bold text-gray-900">
-                {(() => {
-                  const inventory = localStorage.getItem('merchant_inventory');
-                  return inventory ? JSON.parse(inventory).length : 0;
-                })()}
+                {inventoryCount}
               </span>
             </div>
             <div className="pt-3 border-t border-gray-200">
               <p className="text-sm text-gray-500">
                 Add products to enable barcode scanning in POS
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Terminal */}
+        <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Customer Terminal</h2>
+              <p className="text-gray-600">
+                Open the customer-facing screen on a second monitor
+              </p>
+            </div>
+            <a
+              href="/customer/terminal"
+              target="_blank"
+              className="px-6 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-bold"
+            >
+              Open →
+            </a>
+          </div>
+
+          <div className="space-y-3">
+            <div className="text-sm text-gray-600">Direct link</div>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={typeof window !== 'undefined' ? `${window.location.origin}/customer/terminal` : '/customer/terminal'}
+                className="flex-1 px-3 py-2 border rounded-lg text-sm text-gray-800 bg-gray-50"
+              />
+              <button
+                onClick={() => {
+                  const url = typeof window !== 'undefined' ? `${window.location.origin}/customer/terminal` : '/customer/terminal';
+                  navigator.clipboard?.writeText(url);
+                }}
+                className="px-3 py-2 bg-gray-900 text-white rounded-lg text-sm hover:bg-black"
+              >
+                Copy
+              </button>
+              <button
+                onClick={() => {
+                  const url = typeof window !== 'undefined' ? `${window.location.origin}/customer/terminal` : '/customer/terminal';
+                  window.open(url, '_blank', 'noopener');
+                }}
+                className="px-3 py-2 bg-white border rounded-lg text-sm hover:bg-gray-50"
+              >
+                New Window
+              </button>
             </div>
           </div>
         </div>
@@ -300,15 +328,15 @@ export default function DashboardOverview() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {recentTransactions.map((txn) => (
-                <tr key={txn.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={txn.transaction_id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{txn.id}</span>
+                    <span className="text-sm font-medium text-gray-900">{txn.transaction_id}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700">{txn.customer}</span>
+                    <span className="text-sm text-gray-700">{txn.customer_id}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.amount)}</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatCurrency(txn.total)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(txn.status)}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { api } from '@/lib/api';
 
 export default function CustomerProfilePage() {
   const router = useRouter();
@@ -15,41 +16,36 @@ export default function CustomerProfilePage() {
     address: '',
     city: '',
     state: '',
-    zip: ''
+    zip_code: ''
   });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('customer_token');
-    if (!token) {
-      router.push('/customer/login');
-      return;
-    }
-
-    // Load profile from localStorage
-    const savedProfile = localStorage.getItem('customer_profile');
-    if (savedProfile) {
-      const data = JSON.parse(savedProfile);
-      setProfile({
-        name: data.name || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        address: data.address || '',
-        city: data.city || '',
-        state: data.state || '',
-        zip: data.zip || ''
-      });
-    } else {
-      // Load from email if exists
-      const email = localStorage.getItem('customer_email');
-      if (email) {
+    const loadProfile = async () => {
+      try {
+        const user = await api.getCurrentUser();
+        if (user?.role !== 'customer') {
+          router.push('/customer/login');
+          return;
+        }
+        const data = await api.getCustomerProfile();
         setProfile({
-          ...profile,
-          email: email
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          zip_code: data.zip_code || ''
         });
+      } catch (err: any) {
+        setError(err?.message || 'Unable to load profile');
       }
-    }
+    };
+
+    loadProfile();
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,26 +59,25 @@ export default function CustomerProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    // Save profile
-    const existingProfile = localStorage.getItem('customer_profile');
-    const profileData = existingProfile ? JSON.parse(existingProfile) : {};
-    
-    const updatedProfile = {
-      ...profileData,
-      ...profile,
-      updatedAt: new Date().toISOString()
-    };
-
-    localStorage.setItem('customer_profile', JSON.stringify(updatedProfile));
-    localStorage.setItem('customer_email', profile.email);
-
-    setLoading(false);
-    setSaved(true);
-    
-    setTimeout(() => {
-      setSaved(false);
-    }, 3000);
+    try {
+      await api.updateCustomerProfile({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        state: profile.state,
+        zip_code: profile.zip_code
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setError(err?.message || 'Unable to save profile');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,7 +101,12 @@ export default function CustomerProfilePage() {
 
           <div className="bg-white rounded-xl shadow-lg p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -196,8 +196,8 @@ export default function CustomerProfilePage() {
                     </label>
                     <input
                       type="text"
-                      name="zip"
-                      value={profile.zip}
+                    name="zip_code"
+                    value={profile.zip_code}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3cb6ad] focus:border-transparent"
                     />
@@ -243,5 +243,7 @@ export default function CustomerProfilePage() {
     </>
   );
 }
+
+
 
 

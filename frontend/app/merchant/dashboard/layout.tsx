@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import { api } from '@/lib/api';
 
 export default function DashboardLayout({
   children,
@@ -14,12 +15,20 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      router.push('/merchant/login');
-    } else {
-      setLoading(false);
-    }
+    const verify = async () => {
+      try {
+        const user = await api.getCurrentUser();
+        if (user?.role !== 'merchant') {
+          router.push('/merchant/login');
+          return;
+        }
+        setLoading(false);
+      } catch (err) {
+        router.push('/merchant/login');
+      }
+    };
+
+    verify();
   }, [router]);
 
   if (loading) {

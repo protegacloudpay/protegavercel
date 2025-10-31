@@ -67,49 +67,50 @@ class ApiClient {
 
   // Auth endpoints
   async login(email: string, password: string) {
-    // Backend uses form data for login
-    const formData = new URLSearchParams();
-    formData.append('username', email);
-    formData.append('password', password);
-    
-    const response = await fetch(`${this.baseUrl}/api/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: response.statusText }));
-      throw new Error(error.detail || 'Login failed');
-    }
-
-    const data = await response.json();
-    this.setToken(data.access_token);
-    return data;
+    const response = await this.request<{ access_token: string; token_type: string }>(
+      '/api/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }
+    );
+    this.setToken(response.access_token);
+    return response;
   }
 
   async register(data: {
     name: string;
     email: string;
     password: string;
-    role?: string;
+    company_name?: string;
+    phone?: string;
+    role?: 'merchant' | 'customer';
   }) {
     const response = await this.request<{ access_token: string; token_type: string }>(
-      '/api/register',
+      '/api/auth/register',
       {
         method: 'POST',
         body: JSON.stringify({
           name: data.name,
           email: data.email,
           password: data.password,
-          role: data.role || 'merchant'
+          company_name: data.company_name,
+          phone: data.phone,
+          role: data.role || 'merchant',
         }),
       }
     );
     this.setToken(response.access_token);
     return response;
+  }
+
+  logout() {
+    this.clearToken();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('customer_token');
+      localStorage.removeItem('customer_email');
+      localStorage.removeItem('customer_fingerprint');
+    }
   }
 
   async getCurrentUser() {
@@ -175,8 +176,23 @@ class ApiClient {
     items: Array<{ name: string; price: number }>;
     fingerprint_hash: string;
     payment_method_id?: number;
-  }): Promise<{ total: number; transaction_id: string }> {
-    return this.request<{ total: number; transaction_id: string }>('/api/transactions/create', {
+    pos_provider?: string;
+  }): Promise<{
+    transaction_id: string;
+    total: number;
+    status: string;
+    payment_provider?: string;
+    provider_transaction_id?: string;
+    client_secret?: string;
+  }> {
+    return this.request<{
+      transaction_id: string;
+      total: number;
+      status: string;
+      payment_provider?: string;
+      provider_transaction_id?: string;
+      client_secret?: string;
+    }>('/api/transactions/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });

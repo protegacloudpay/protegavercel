@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { api } from '@/lib/api';
 
 export default function MerchantRegisterPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function MerchantRegisterPage() {
     address: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -28,16 +30,22 @@ export default function MerchantRegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Store merchant data
-    localStorage.setItem('auth_token', 'merchant_token_' + Date.now());
-    localStorage.setItem('user_email', formData.email);
-    localStorage.setItem('user_role', 'merchant');
-    
-    router.push('/merchant/dashboard');
+    setError(null);
+
+    try {
+      await api.register({
+        name: formData.businessName,
+        email: formData.email,
+        password: formData.password,
+        company_name: formData.businessName,
+        phone: formData.phone,
+        role: 'merchant',
+      });
+      router.push('/merchant/dashboard');
+    } catch (err: any) {
+      setError(err?.message || 'Unable to create merchant account');
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,6 +125,12 @@ export default function MerchantRegisterPage() {
                 </div>
               </div>
 
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Business Address *
@@ -169,5 +183,7 @@ export default function MerchantRegisterPage() {
     </>
   );
 }
+
+
 
 

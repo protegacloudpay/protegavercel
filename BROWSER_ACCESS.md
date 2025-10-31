@@ -69,3 +69,5 @@ Just open your browser and navigate to that URL!
 **Protega CloudPay™** - Pay with nothing but your fingerprint. 🚀
 
 
+
+

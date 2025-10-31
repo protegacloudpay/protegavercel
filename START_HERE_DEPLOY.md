@@ -255,3 +255,5 @@ flyctl secrets list -a protega-cloudpay-api
 
 See `DEPLOYMENT_GUIDE.md` for advanced configuration.
 
+
+

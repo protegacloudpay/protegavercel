@@ -205,3 +205,5 @@ Your Protega CloudPay platform is now complete with cloud fingerprint storage an
 **Protega CloudPay™** - Pay with nothing but your fingerprint, anywhere! ☁️👆
 
 
+
+

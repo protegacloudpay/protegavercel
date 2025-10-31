@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { api } from '@/lib/api';
 
 export default function CustomerRegisterPage() {
   const router = useRouter();
@@ -16,10 +17,14 @@ export default function CustomerRegisterPage() {
     address: '',
     city: '',
     state: '',
-    zip: ''
+    zip: '',
+    password: ''
   });
   const [fingerprintEnrolled, setFingerprintEnrolled] = useState(false);
   const [bankLinked, setBankLinked] = useState(false);
+  const [fingerprintHash, setFingerprintHash] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -29,14 +34,21 @@ export default function CustomerRegisterPage() {
   };
 
   const handleFingerprintEnroll = async () => {
-    // Simulate fingerprint enrollment
     setFingerprintEnrolled(false);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setFingerprintEnrolled(true);
+    setError(null);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      const randomBytes = new Uint8Array(16);
+      window.crypto.getRandomValues(randomBytes);
+      const hash = Array.from(randomBytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+      setFingerprintHash(`fp_${hash}`);
+      setFingerprintEnrolled(true);
+    } catch (e) {
+      setError('Unable to capture fingerprint. Please try again.');
+    }
   };
 
   const handleBankLink = async () => {
-    // Simulate Plaid bank linking
     setBankLinked(false);
     await new Promise(resolve => setTimeout(resolve, 1500));
     setBankLinked(true);
@@ -44,25 +56,30 @@ export default function CustomerRegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Generate cloud fingerprint hash (AES-256 encrypted)
-    const fingerprintHash = 'fp_' + btoa(formData.email + Date.now()).substring(0, 32);
-    
-    // Store customer data including cloud fingerprint ID
-    localStorage.setItem('customer_token', 'customer_token_' + Date.now());
-    localStorage.setItem('customer_email', formData.email);
-    localStorage.setItem('customer_fingerprint', fingerprintHash);
-    localStorage.setItem('fingerprint_cloud_id', fingerprintHash); // Cloud identifier
-    
-    // Store customer profile for cloud sync
-    localStorage.setItem('customer_profile', JSON.stringify({
-      ...formData,
-      fingerprintId: fingerprintHash,
-      enrolledAt: new Date().toISOString(),
-      cloudStored: true
-    }));
-    
-    router.push('/customer/dashboard');
+    setLoading(true);
+    setError(null);
+
+    try {
+      await api.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        role: 'customer',
+      });
+
+      await api.registerCustomer({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        fingerprint_hash: fingerprintHash,
+      });
+
+      router.push('/customer/dashboard');
+    } catch (err: any) {
+      setError(err?.message || 'Unable to complete registration');
+      setLoading(false);
+    }
   };
 
   return (
@@ -149,6 +166,22 @@ export default function CustomerRegisterPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3cb6ad] focus:border-transparent"
+                    required
+                    minLength={8}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">At least 8 characters</p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -209,6 +242,7 @@ export default function CustomerRegisterPage() {
                   <div className="bg-green-50 rounded-lg p-6 text-center">
                     <div className="text-6xl mb-4">✓</div>
                     <p className="text-green-800 font-medium">Fingerprint enrolled successfully!</p>
+                    <p className="text-xs text-green-700 font-mono break-all mt-2">{fingerprintHash}</p>
                   </div>
                 )}
 
@@ -256,6 +290,12 @@ export default function CustomerRegisterPage() {
                   </div>
                 )}
 
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="flex gap-4">
                   <button
                     type="button"
@@ -266,10 +306,10 @@ export default function CustomerRegisterPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={!bankLinked}
+                    disabled={!bankLinked || !fingerprintEnrolled || loading}
                     className="flex-1 px-6 py-3 bg-[#3cb6ad] text-white rounded-lg hover:bg-[#2ea99f] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Complete Registration
+                    {loading ? 'Finalizing…' : 'Complete Registration'}
                   </button>
                 </form>
               </div>

@@ -122,3 +122,5 @@ flyctl status -a protega-cloudpay-api
 
 All configuration is complete. Follow `QUICK_DEPLOY.md` for fastest setup, or `DEPLOYMENT_GUIDE.md` for detailed instructions.
 
+
+
