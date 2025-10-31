@@ -36,14 +36,15 @@ export default function DashboardOverview() {
           api.getInventory(),
         ]);
 
+        const stats = statsResponse as any;
         setStats({
-          total_transactions: statsResponse.total_transactions,
-          revenue: statsResponse.revenue,
-          protega_fees: statsResponse.protega_fees,
-          customers: statsResponse.customers,
-          avg_transaction: statsResponse.avg_transaction,
-          fraud_attempts: statsResponse.fraud_attempts,
-          approval_rate: statsResponse.approval_rate,
+          total_transactions: stats.total_transactions,
+          revenue: stats.revenue,
+          protega_fees: stats.protega_fees,
+          customers: stats.customers,
+          avg_transaction: stats.avg_transaction,
+          fraud_attempts: stats.fraud_attempts,
+          approval_rate: stats.approval_rate,
         });
 
         const txns = Array.isArray(transactionsResponse) ? transactionsResponse : [];
