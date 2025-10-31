@@ -19,7 +19,7 @@ export default function CustomersPage() {
   useEffect(() => {
     const loadCustomers = async () => {
       try {
-        const response = await api.getMerchantCustomers();
+        const response = await api.getMerchantCustomers() as any;
         setCustomers(response?.customers || []);
       } catch (error) {
         console.error('Failed to load customers', error);
