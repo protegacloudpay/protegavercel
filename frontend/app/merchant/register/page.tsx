@@ -41,6 +41,8 @@ export default function MerchantRegisterPage() {
         phone: formData.phone,
         role: 'merchant',
       });
+      // Small delay to ensure token is stored
+      await new Promise(resolve => setTimeout(resolve, 100));
       router.push('/merchant/dashboard');
     } catch (err: any) {
       setError(err?.message || 'Unable to create merchant account');
